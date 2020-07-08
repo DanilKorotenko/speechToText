@@ -13,7 +13,7 @@ def encode_audio(audioFilePath):
 	audioFile.close();
 	return base64.b64encode(audio_content)
 
-def recogniseFile(audioFilePath, api_key):
+def recogniseFile(audioFilePath, api_key, languageCode, verbose):
 	print "Processing file: ", audioFilePath;
 # 	print "Convert to flac";
 	flacPath = audioFilePath + '.flac';
@@ -26,7 +26,7 @@ def recogniseFile(audioFilePath, api_key):
 	request = {
 		"config": {
 			"encoding":"FLAC",
-			"languageCode": "ru",
+			"languageCode": languageCode,
 		},
 		"audio": {
 			"content": audioContent
@@ -47,16 +47,22 @@ def recogniseFile(audioFilePath, api_key):
 # 	print responseJson;
 	response = json.loads(responseJson);
 
-	print response['results'][0]['alternatives'][0]['transcript'];
+	if verbose ==False:
+		print response['results'][0]['alternatives'][0]['transcript'];
+	else:
+		print response;
+
 	print "********";
 
 def main(argv):
-	updateStorage = False;
 	doRecognition = False;
+	verbose = False;
 	fileProcess = '';
 	api_key = '';
+	languageCode="ru";
+
 	try:
-		opts, args = getopt.getopt(argv,"hrf:a:",["recognize","file","api-key"]);
+		opts, args = getopt.getopt(argv,"hrvl:f:a:",["help", "recognize", "verbose", "language", "file","api-key"]);
 	except getopt.GetoptError:
 		sys.exit(2);
 
@@ -67,18 +73,22 @@ def main(argv):
 			sys.exit();
 
 		if opt in ("-r", "--recognize"):
-			print "doRecognition is specified";
 			doRecognition = True;
+
+		if opt in ("-v", "--verbose"):
+			verbose = True;
 
 		if opt in ("-f", "--file"):
 # 			print "File is specified: ", arg;
 			doRecognition = False;
-			updateStorage = False;
 			fileProcess = arg;
 
 		if opt in ("-a", "--api-key"):
 # 			print "API key is specified: ", arg;
 			api_key = arg;
+
+		if opt in ("-l", "--language"):
+			languageCode = arg;
 
 	if api_key == '':
 		print "No API key specified."
@@ -91,10 +101,10 @@ def main(argv):
 		for filename in os.listdir(directory):
 			if filename.endswith(".m4a"):
 				fullPath = os.path.join(directory, filename);
-				recogniseFile(fullPath, api_key);
+				recogniseFile(fullPath, api_key, languageCode, verbose);
 
 	if fileProcess:
-		recogniseFile(fileProcess, api_key);
+		recogniseFile(fileProcess, api_key, languageCode, verbose);
 
 if __name__ == "__main__":
 	main(sys.argv[1:]);
