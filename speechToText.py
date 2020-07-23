@@ -56,6 +56,8 @@ def recogniseFile(audioFilePath, api_key, languageCode, verbose):
 			print response;
 	except ValueError:
 		print responseJson;
+	except KeyError:
+		print responseJson;
 
 	print "********";
 
