@@ -44,13 +44,14 @@ def recogniseFile(audioFilePath, api_key, languageCode, verbose):
 
 	responseJson = os.popen(recognitionCommand).read();
 
-# 	print responseJson;
-	response = json.loads(responseJson);
-
-	if verbose ==False:
-		print response['results'][0]['alternatives'][0]['transcript'];
-	else:
-		print response;
+	try:
+		response = json.loads(responseJson);
+		if verbose ==False:
+			print response['results'][0]['alternatives'][0]['transcript'];
+		else:
+			print response;
+	except ValueError:
+		print responseJson;
 
 	print "********";
 
