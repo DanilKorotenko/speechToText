@@ -5,6 +5,7 @@ import ntpath
 import subprocess
 import codecs
 import base64
+import glob
 
 #return string
 def encode_audio(audioFilePath):
@@ -23,6 +24,9 @@ def recogniseFile(audioFilePath, api_key, languageCode, verbose):
 	print "Do recognition";
 
 	audioContent = encode_audio(flacPath);
+
+	os.remove(flacPath);
+
 	request = {
 		"config": {
 			"encoding":"FLAC",
@@ -98,11 +102,21 @@ def main(argv):
 	if doRecognition:
 		print "Do recognition";
 
-		directory = "/Users/danilkorotenko/Documents/ViberDownloads/PTT/";
-		for filename in os.listdir(directory):
+# 		directory = "/Users/danilkorotenko/Documents/ViberDownloads/PTT/";
+		print "Getting files list.";
+		files = glob.glob("/Users/danilkorotenko/Documents/ViberDownloads/PTT/*.m4a");
+# 		files = os.listdir(directory);
+		print("Files: ", len(files));
+
+		print "Sorting files.";
+		sorted_by_mtime_ascending = sorted(files, key=lambda t: -os.stat(t).st_mtime);
+		print "Sorted";
+
+		for filename in sorted_by_mtime_ascending:
 			if filename.endswith(".m4a"):
-				fullPath = os.path.join(directory, filename);
-				recogniseFile(fullPath, api_key, languageCode, verbose);
+# 				fullPath = os.path.join(directory, filename);
+# 				recogniseFile(fullPath, api_key, languageCode, verbose);
+				recogniseFile(filename, api_key, languageCode, verbose);
 
 	if fileProcess:
 		recogniseFile(fileProcess, api_key, languageCode, verbose);
