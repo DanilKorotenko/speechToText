@@ -6,6 +6,7 @@ import subprocess
 import codecs
 import base64
 import glob
+from pathlib import Path
 
 #return string
 def encode_audio(audioFilePath):
@@ -61,15 +62,36 @@ def recogniseFile(audioFilePath, api_key, languageCode, verbose):
 
 	print "********";
 
+def recogniseDirectory(directoryPath, api_key, languageCode, verbose):
+
+	directory = Path(directoryPath);
+
+	fileMask = str(directory / "*.m4a");
+
+	print "Getting files list.";
+	files = glob.glob(fileMask);
+
+	print("Files: ", len(files));
+
+	print "Sorting files.";
+	sorted_by_mtime_ascending = sorted(files, key=lambda t: -os.stat(t).st_mtime);
+	print "Sorted";
+
+	for filename in sorted_by_mtime_ascending:
+		if filename.endswith(".m4a"):
+			recogniseFile(filename, api_key, languageCode, verbose);
+
+
 def main(argv):
 	doRecognition = False;
 	verbose = False;
 	fileProcess = '';
+	directoryProcess = '';
 	api_key = '';
 	languageCode="ru";
 
 	try:
-		opts, args = getopt.getopt(argv,"hrvl:f:a:",["help", "recognize", "verbose", "language", "file","api-key"]);
+		opts, args = getopt.getopt(argv,"hvd:l:f:a:",["help", "recognize", "verbose", "dir", "language", "file","api-key"]);
 	except getopt.GetoptError:
 		sys.exit(2);
 
@@ -90,6 +112,11 @@ def main(argv):
 			doRecognition = False;
 			fileProcess = arg;
 
+		if opt in ("-d", "--dir"):
+# 			print "File is specified: ", arg;
+			doRecognition = False;
+			directoryProcess = arg;
+
 		if opt in ("-a", "--api-key"):
 # 			print "API key is specified: ", arg;
 			api_key = arg;
@@ -104,21 +131,14 @@ def main(argv):
 	if doRecognition:
 		print "Do recognition";
 
-# 		directory = "/Users/danilkorotenko/Documents/ViberDownloads/PTT/";
-		print "Getting files list.";
-		files = glob.glob("/Users/danilkorotenko/Documents/ViberDownloads/PTT/*.m4a");
-# 		files = os.listdir(directory);
-		print("Files: ", len(files));
+		viberPath = Path.home() / "Documents" / "ViberDownloads" / "PTT"
 
-		print "Sorting files.";
-		sorted_by_mtime_ascending = sorted(files, key=lambda t: -os.stat(t).st_mtime);
-		print "Sorted";
+		viberDir = str(viberPath);
 
-		for filename in sorted_by_mtime_ascending:
-			if filename.endswith(".m4a"):
-# 				fullPath = os.path.join(directory, filename);
-# 				recogniseFile(fullPath, api_key, languageCode, verbose);
-				recogniseFile(filename, api_key, languageCode, verbose);
+		recogniseDirectory(viberDir, api_key, languageCode, verbose):
+
+	if directoryProcess:
+		recogniseDirectory(directoryProcess, api_key, languageCode, verbose);
 
 	if fileProcess:
 		recogniseFile(fileProcess, api_key, languageCode, verbose);
